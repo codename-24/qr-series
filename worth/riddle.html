@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Riddle 🎁</title>
+<style>
+  body {
+    margin:0; padding:0;
+    background: linear-gradient(135deg,#fbc2eb,#a6c1ee);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    height:100vh; text-align:center;
+  }
+  .container { 
+    background: rgba(255,255,255,0.95); 
+    padding:25px 20px; border-radius:16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    max-width: 380px; width:90%; display:flex;
+    flex-direction: column; align-items:center;
+  }
+  h1{margin-bottom:15px;color:#3f51b5;font-size:1.5rem;}
+  input[type="password"]{
+    padding:12px;
+    width:90%;
+    max-width: 280px;
+    border:2px solid #3f51b5;
+    border-radius:10px;
+    margin-bottom:15px;
+    font-size:16px;
+    outline:none;
+    text-align:center;
+  }
+  button{
+    padding:12px;width:90%; max-width: 310px;;border:none;
+    background:linear-gradient(135deg,#3f51b5,#1a237e);
+    color:white;border-radius:10px;font-size:16px;font-weight:bold;
+    cursor:pointer;margin-bottom:10px;transition: transform 0.2s ease, background 0.3s ease;
+  }
+  button:hover:not(:disabled){transform:scale(1.05);}
+  button:disabled { background: #aaa; cursor:not-allowed; }
+  .error{color:red;margin-top:12px;display:none;font-size:0.95rem;font-weight:bold;}
+  #hintMain{display:none;} /* hidden until first wrong attempt */
+
+  /* Modal */
+  .modal { display:none; position:fixed; z-index:100; left:0;top:0;width:100%;height:100%; overflow:auto; background: rgba(0,0,0,0.5);}
+  .modal-content { background:#fff;margin:20% auto;padding:20px;border-radius:12px; width:80%; max-width:300px;}
+  .modal-content h3{margin-bottom:15px;}
+  .modal-content button{width:100%; margin:5px 0;}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Solve the Riddle 🧩</h1>
+  <p>The answer is your gift key ❤️</p>
+
+  <input type="password" id="riddleAns" placeholder="Enter answer" />
+  <button onclick="checkRiddle()">Unlock Gift</button>
+  <p id="riddleErr" class="error">❌ Wrong password Madhavi, try again!</p>
+
+  <button id="hintMain" onclick="openHint()">Need a hint? 🤔</button>
+  <p id="hintMsg" style="color:green; font-weight:bold;"></p>
+</div>
+
+<!-- Hint Modal -->
+<div id="hintModal" class="modal">
+  <div class="modal-content">
+    <h3>Pick your hint 😏</h3>
+    <button onclick="giveHint('Ice cream date 🍦')">Ice cream date 🍦</button>
+    <button onclick="giveHint('Movie 🎬')">Movie Date 🎬</button>
+    <button onclick="giveHint('Surprise 🎁')">Surprise Gifts 🎁</button>
+  </div>
+</div>
+
+<script>
+let hintsUsed = 0;
+const maxHints = 2;
+const password = "worth";
+
+// Hardcoded mapping of hints → letter positions
+const hintLetters = {
+  "Ice cream date 🍦": {pos: 3, letter:"r"},
+  "Movie 🎬": {pos: 2, letter:"o"},
+  "Surprise 🎁": {pos: 4, letter:"t"}
+};
+
+function checkRiddle(){
+  const ans = document.getElementById('riddleAns').value.trim().toLowerCase();
+  if(ans === password){
+    window.location.href = "https://drive.google.com/file/d/1BkPaa3-u3FivMj7T20m1dYIkjCrx1h9H/view?usp=drivesdk";
+  } else {
+    document.getElementById('riddleErr').style.display = 'block';
+    document.getElementById('hintMain').style.display = 'block'; // show hint button on first wrong attempt
+  }
+}
+
+function openHint(){
+  document.getElementById('hintModal').style.display='block';
+}
+
+function giveHint(choice){
+  if(hintsUsed >= maxHints){
+    document.getElementById('hintMsg').textContent = "❌ No more hints you can choose!";
+    document.getElementById('hintModal').style.display = 'none';
+    return;
+  }
+
+  hintsUsed++;
+  const hint = hintLetters[choice];
+  document.getElementById('hintMsg').textContent = `Hint ${hintsUsed}: ${hint.pos}ᵗʰ letter is "${hint.letter}"`;
+
+  // disable the clicked button
+  event.target.disabled = true;
+
+  // close modal
+  document.getElementById('hintModal').style.display='none';
+
+  // send selection to Formspree
+  fetch("https://formspree.io/f/xpwyqdzk", {
+    method: "POST",
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hintSelected: choice })
+  });
+}
+
+// Close modal if click outside
+window.onclick = function(event) {
+  const modal = document.getElementById('hintModal');
+  if(event.target == modal) modal.style.display = "none";
+}
+</script>
+
+</body>
+</html>
